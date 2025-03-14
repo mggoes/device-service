@@ -1,4 +1,4 @@
-package br.com.device.device_service;
+package br.com.device;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
