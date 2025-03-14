@@ -1,0 +1,38 @@
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: device_db
+    volumes:
+      - mongodb-data:/data/db/
+      - ./mongodb/init-db.js:/docker-entrypoint-initdb.d/init-db.js
+    networks:
+      - net
+
+  mongodb-client:
+    image: mongoclient/mongoclient
+    container_name: mongodb-client
+    restart: always
+    depends_on:
+      mongodb:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URL: "mongodb://admin:admin@mongodb:27017"
+    networks:
+      - net
+
+volumes:
+  mongodb-data:
+    driver: local
+
+networks:
+  net:
+    driver: bridge

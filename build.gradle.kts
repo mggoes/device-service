@@ -8,6 +8,7 @@ group = "br.com.device"
 version = "1.0.0"
 
 val springCloudVersion = "2024.0.0"
+val lombokVersion = "1.18.36"
 
 java {
     toolchain {
@@ -27,13 +28,16 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude("org.springframework.boot", "spring-boot-starter-tomcat")
     }
-
     implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
-
     implementation("io.micrometer:micrometer-tracing-bridge-brave")
     implementation("io.zipkin.reporter2:zipkin-reporter-brave")
 
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
+    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 }
 
 dependencyManagement {
