@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: 'device-service'
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
