@@ -11,7 +11,7 @@ services:
       MONGO_INITDB_DATABASE: device_db
     volumes:
       - mongodb-data:/data/db/
-      - ./mongodb/init-db.js:/docker-entrypoint-initdb.d/init-db.js
+      - ./db/init.js:/docker-entrypoint-initdb.d/init-db.js
     networks:
       - net
 
