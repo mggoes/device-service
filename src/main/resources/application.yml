@@ -6,3 +6,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  data:
+    mongodb:
+      host: 'localhost'
+      database: 'device_db'
+      username: 'device_service'
+      password: 'device@app'
+      uuid-representation: standard
