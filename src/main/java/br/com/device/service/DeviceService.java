@@ -1,6 +1,7 @@
 package br.com.device.service;
 
 import br.com.device.dto.DeviceData;
+import br.com.device.exception.DeviceInUseException;
 import br.com.device.exception.DeviceNotFoundException;
 import br.com.device.mapper.DeviceDataMapper;
 import br.com.device.mapper.StateMapper;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static br.com.device.model.State.IN_USE;
 import static org.springframework.data.domain.Example.of;
 
 @Slf4j
@@ -40,7 +42,7 @@ public class DeviceService {
     }
 
     /**
-     * Reads one device using provided id.
+     * Reads one device using the provided id.
      *
      * @param id device identifier.
      * @return device data.
@@ -50,5 +52,27 @@ public class DeviceService {
         return this.repository.findById(id)
                 .map(this.mapper::toDTO)
                 .orElseThrow(DeviceNotFoundException::new);
+    }
+
+    /**
+     * Updates a device partially or fully using the provided data.
+     *
+     * @param id     device identifier.
+     * @param device data that should be replaced.
+     * @return updated device.
+     * @throws DeviceInUseException when there is an attempt to update the name or brand and device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
+     */
+    public DeviceData update(final UUID id, final DeviceData device) {
+        final var foundDevice = this.readOne(id);
+        if (this.isInUse(foundDevice) && (device.name() != null || device.brand() != null)) {
+            throw new DeviceInUseException("Name or brand cannot be changed while device is in use");
+        }
+        final var deviceToUpdate = this.mapper.toDTO(device, foundDevice);
+        log.info("a=update, d={}", deviceToUpdate);
+        return this.save(deviceToUpdate);
+    }
+
+    private boolean isInUse(final DeviceData device) {
+        return IN_USE == this.stateMapper.fromString(device.state());
     }
 }

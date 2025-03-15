@@ -1,12 +1,15 @@
 package br.com.device.service;
 
 import br.com.device.dto.DeviceData;
+import br.com.device.exception.DeviceInUseException;
 import br.com.device.exception.DeviceNotFoundException;
 import br.com.device.mapper.DeviceDataMapper;
 import br.com.device.mapper.StateMapper;
 import br.com.device.model.Device;
 import br.com.device.repository.DeviceRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Example;
@@ -58,6 +61,7 @@ class DeviceServiceTest {
 
         // Then
         assertNotNull(result);
+
         verify(this.stateMapper).fromString(anyString());
         verify(this.mapper).toEntity(any(DeviceData.class));
         verify(this.mapper).toDTO(any(Device.class));
@@ -83,6 +87,7 @@ class DeviceServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(2, result.getTotalElements());
+
         verify(this.mapper).toEntity(any(DeviceData.class));
         verify(this.mapper, times(2)).toDTO(any(Device.class));
         verify(this.repository).findAll(any(), any(Pageable.class));
@@ -105,6 +110,7 @@ class DeviceServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
+
         verify(this.mapper).toEntity(any(DeviceData.class));
         verify(this.mapper).toDTO(any(Device.class));
         verify(this.repository).findAll(eq(Example.of(entityFilter)), any(Pageable.class));
@@ -127,6 +133,7 @@ class DeviceServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
+
         verify(this.mapper).toEntity(any(DeviceData.class));
         verify(this.mapper).toDTO(any(Device.class));
         verify(this.repository).findAll(eq(Example.of(entityFilter)), any(Pageable.class));
@@ -146,6 +153,7 @@ class DeviceServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(id, result.id());
+
         verify(this.repository).findById(any());
         verify(this.mapper).toDTO(any(Device.class));
     }
@@ -161,5 +169,81 @@ class DeviceServiceTest {
         // Then
         verify(this.repository).findById(any());
         verify(this.mapper, never()).toDTO(any(Device.class));
+    }
+
+    @Test
+    void shouldUpdate() {
+        // Given
+        final var id = randomUUID();
+        final var device = Device.builder().id(id).name("Galaxy").brand("Samsung").state(AVAILABLE).build();
+        final var updatedDevice = DeviceData.builder().name("iPhone").brand("Apple").state("in-use").build();
+
+        when(this.repository.findById(any())).thenReturn(Optional.of(device));
+
+        // When
+        final var result = this.service.update(id, updatedDevice);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(id, result.id());
+        assertEquals("iPhone", result.name());
+        assertEquals("Apple", result.brand());
+        assertEquals("in-use", result.state());
+
+        verify(this.stateMapper, times(2)).fromString(anyString());
+        verify(this.mapper, times(2)).toDTO(any(Device.class));
+        verify(this.mapper).toDTO(any(DeviceData.class), any(DeviceData.class));
+        verify(this.mapper).toEntity(any(DeviceData.class));
+        verify(this.repository).findById(any());
+        verify(this.repository).save(any());
+    }
+
+    @Test
+    void shouldUpdateInUseWhenNameOrBrandIsNotPresent() {
+        // Given
+        final var id = randomUUID();
+        final var device = Device.builder().id(id).name("Galaxy").brand("Samsung").state(IN_USE).build();
+        final var updatedDevice = DeviceData.builder().state("available").build();
+
+        when(this.repository.findById(any())).thenReturn(Optional.of(device));
+
+        // When
+        final var result = this.service.update(id, updatedDevice);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(id, result.id());
+        assertEquals("available", result.state());
+
+        verify(this.stateMapper, times(2)).fromString(anyString());
+        verify(this.mapper, times(2)).toDTO(any(Device.class));
+        verify(this.mapper).toDTO(any(DeviceData.class), any(DeviceData.class));
+        verify(this.mapper).toEntity(any(DeviceData.class));
+        verify(this.repository).findById(any());
+        verify(this.repository).save(any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"iPhone,", ",Apple"})
+    void shouldNotUpdateNameOrBrandWhenDeviceIsInUse(final String name, final String brand) {
+        // Given
+        final var id = randomUUID();
+        final var device = Device.builder().id(id).name("Galaxy").brand("Samsung").state(IN_USE).build();
+        final var updatedDevice = DeviceData.builder().name(name).brand(brand).build();
+
+        when(this.repository.findById(any())).thenReturn(Optional.of(device));
+
+        // When
+        final var result = assertThrows(DeviceInUseException.class, () -> this.service.update(id, updatedDevice));
+
+        // Then
+        assertEquals("Name or brand cannot be changed while device is in use", result.getMessage());
+
+        verify(this.stateMapper).fromString(anyString());
+        verify(this.mapper).toDTO(any(Device.class));
+        verify(this.mapper, never()).toDTO(any(DeviceData.class), any(DeviceData.class));
+        verify(this.mapper, never()).toEntity(any(DeviceData.class));
+        verify(this.repository).findById(any());
+        verify(this.repository, never()).save(any());
     }
 }
