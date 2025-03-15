@@ -154,20 +154,22 @@ class DeviceServiceTest {
         assertNotNull(result);
         assertEquals(id, result.id());
 
-        verify(this.repository).findById(any());
+        verify(this.repository).findById(eq(id));
         verify(this.mapper).toDTO(any(Device.class));
     }
 
     @Test
     void shouldThrowExceptionWhenDeviceNotFound() {
         // Given
+        final var id = randomUUID();
+
         when(this.repository.findById(any())).thenReturn(empty());
 
         // When
-        assertThrows(DeviceNotFoundException.class, () -> this.service.readOne(randomUUID()));
+        assertThrows(DeviceNotFoundException.class, () -> this.service.readOne(id));
 
         // Then
-        verify(this.repository).findById(any());
+        verify(this.repository).findById(eq(id));
         verify(this.mapper, never()).toDTO(any(Device.class));
     }
 
@@ -194,7 +196,7 @@ class DeviceServiceTest {
         verify(this.mapper, times(2)).toDTO(any(Device.class));
         verify(this.mapper).toDTO(any(DeviceData.class), any(DeviceData.class));
         verify(this.mapper).toEntity(any(DeviceData.class));
-        verify(this.repository).findById(any());
+        verify(this.repository).findById(eq(id));
         verify(this.repository).save(any());
     }
 
@@ -219,7 +221,7 @@ class DeviceServiceTest {
         verify(this.mapper, times(2)).toDTO(any(Device.class));
         verify(this.mapper).toDTO(any(DeviceData.class), any(DeviceData.class));
         verify(this.mapper).toEntity(any(DeviceData.class));
-        verify(this.repository).findById(any());
+        verify(this.repository).findById(eq(id));
         verify(this.repository).save(any());
     }
 
@@ -243,7 +245,45 @@ class DeviceServiceTest {
         verify(this.mapper).toDTO(any(Device.class));
         verify(this.mapper, never()).toDTO(any(DeviceData.class), any(DeviceData.class));
         verify(this.mapper, never()).toEntity(any(DeviceData.class));
-        verify(this.repository).findById(any());
+        verify(this.repository).findById(eq(id));
         verify(this.repository, never()).save(any());
+    }
+
+    @Test
+    void shouldDelete() {
+        // Given
+        final var id = randomUUID();
+        final var device = Device.builder().id(id).state(AVAILABLE).build();
+
+        when(this.repository.findById(any())).thenReturn(Optional.of(device));
+
+        // When
+        this.service.delete(id);
+
+        // Then
+        verify(this.stateMapper).fromString(anyString());
+        verify(this.mapper).toDTO(any(Device.class));
+        verify(this.repository).findById(eq(id));
+        verify(this.repository).deleteById(eq(id));
+    }
+
+    @Test
+    void shouldNotDeleteWhenDeviceIsInUse() {
+        // Given
+        final var id = randomUUID();
+        final var device = Device.builder().id(id).state(IN_USE).build();
+
+        when(this.repository.findById(any())).thenReturn(Optional.of(device));
+
+        // When
+        final var result = assertThrows(DeviceInUseException.class, () -> this.service.delete(id));
+
+        // Then
+        assertEquals("In use device cannot be removed", result.getMessage());
+
+        verify(this.stateMapper).fromString(anyString());
+        verify(this.mapper).toDTO(any(Device.class));
+        verify(this.repository).findById(eq(id));
+        verify(this.repository, never()).deleteById(eq(id));
     }
 }

@@ -46,7 +46,7 @@ public class DeviceService {
      *
      * @param id device identifier.
      * @return device data.
-     * @throws DeviceNotFoundException when device does not exist.
+     * @throws DeviceNotFoundException if device does not exist.
      */
     public DeviceData readOne(final UUID id) {
         return this.repository.findById(id)
@@ -60,7 +60,8 @@ public class DeviceService {
      * @param id     device identifier.
      * @param device data that should be replaced.
      * @return updated device.
-     * @throws DeviceInUseException when there is an attempt to update the name or brand and device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
+     * @throws DeviceNotFoundException if device does not exist.
+     * @throws DeviceInUseException    if there is an attempt to update the name or brand and device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
      */
     public DeviceData update(final UUID id, final DeviceData device) {
         final var foundDevice = this.readOne(id);
@@ -70,6 +71,19 @@ public class DeviceService {
         final var deviceToUpdate = this.mapper.toDTO(device, foundDevice);
         log.info("a=update, d={}", deviceToUpdate);
         return this.save(deviceToUpdate);
+    }
+
+    /**
+     * Deletes a device using the provided id.
+     *
+     * @param id device identifier.
+     * @throws DeviceNotFoundException if device does not exist.
+     * @throws DeviceInUseException    if device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
+     */
+    public void delete(final UUID id) {
+        final var device = this.readOne(id);
+        if (this.isInUse(device)) throw new DeviceInUseException("In use device cannot be removed");
+        this.repository.deleteById(id);
     }
 
     private boolean isInUse(final DeviceData device) {
