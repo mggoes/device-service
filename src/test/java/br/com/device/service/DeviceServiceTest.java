@@ -8,12 +8,20 @@ import br.com.device.repository.DeviceRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import static br.com.device.model.State.AVAILABLE;
+import static br.com.device.model.State.IN_USE;
+import static java.util.List.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.domain.PageRequest.of;
 
 @SpringBootTest
 class DeviceServiceTest {
@@ -31,11 +39,11 @@ class DeviceServiceTest {
     private DeviceService service;
 
     @Test
-    void shouldSaveDevice() {
+    void shouldSave() {
         // Given
         final DeviceData device = DeviceData.builder()
-                .name("Amazing Device")
-                .brand("Ultimate Brand")
+                .name("iPhone")
+                .brand("Apple")
                 .state("available")
                 .build();
 
@@ -46,8 +54,73 @@ class DeviceServiceTest {
 
         // Then
         assertNotNull(result);
-        verify(this.stateMapper, times(1)).fromString(anyString());
-        verify(this.mapper, times(1)).toEntity(any(DeviceData.class));
-        verify(this.repository, times(1)).save(any());
+        verify(this.stateMapper).fromString(anyString());
+        verify(this.mapper).toEntity(any(DeviceData.class));
+        verify(this.repository).save(any());
+    }
+
+    @Test
+    void shouldReadAll() {
+        // Given
+        final var pageable = of(0, 10);
+        final var filter = DeviceData.builder().build();
+        final var devices = of(
+                Device.builder().name("iPhone").brand("Apple").state(AVAILABLE).build(),
+                Device.builder().name("Galaxy").brand("Samsung").state(IN_USE).build()
+        );
+        final var page = new PageImpl<>(devices);
+
+        when(this.repository.findAll(any(), any(Pageable.class))).thenReturn(page);
+
+        // When
+        final var result = this.service.readAll(pageable, filter);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        verify(this.mapper).toEntity(any(DeviceData.class));
+        verify(this.repository).findAll(any(), any(Pageable.class));
+    }
+
+    @Test
+    void shouldReadAllByBrand() {
+        // Given
+        final var pageable = of(0, 10);
+        final var filter = DeviceData.builder().brand("Apple").build();
+        final var entityFilter = Device.builder().brand("Apple").build();
+        final var devices = of(Device.builder().name("iPhone").brand("Apple").state(AVAILABLE).build());
+        final var page = new PageImpl<>(devices);
+
+        when(this.repository.findAll(any(), any(Pageable.class))).thenReturn(page);
+
+        // When
+        final var result = this.service.readAll(pageable, filter);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(this.mapper).toEntity(any(DeviceData.class));
+        verify(this.repository).findAll(eq(Example.of(entityFilter)), any(Pageable.class));
+    }
+
+    @Test
+    void shouldReadAllByState() {
+        // Given
+        final var pageable = of(0, 10);
+        final var filter = DeviceData.builder().state("in-use").build();
+        final var entityFilter = Device.builder().state(IN_USE).build();
+        final var devices = of(Device.builder().name("iPhone").brand("Apple").state(IN_USE).build());
+        final var page = new PageImpl<>(devices);
+
+        when(this.repository.findAll(any(), any(Pageable.class))).thenReturn(page);
+
+        // When
+        final var result = this.service.readAll(pageable, filter);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(this.mapper).toEntity(any(DeviceData.class));
+        verify(this.repository).findAll(eq(Example.of(entityFilter)), any(Pageable.class));
     }
 }
