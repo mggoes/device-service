@@ -1,0 +1,34 @@
+[
+  {
+    "id": "2db19102-8bbc-43b6-afd2-993263ae6d1e",
+    "name": "iPhone",
+    "brand": "Apple",
+    "state": "AVAILABLE",
+    "creationTime": "2025-03-15T21:50:41.159Z",
+    "_class": "br.com.device.model.Device"
+  },
+  {
+    "id": "a5225c14-29b4-4b42-bf5b-a09b257b57fb",
+    "name": "Galaxy",
+    "brand": "Samsung",
+    "state": "IN_USE",
+    "creationTime": "2025-03-15T21:50:58.230Z",
+    "_class": "br.com.device.model.Device"
+  },
+  {
+    "id": "8a37328e-8569-4810-af11-2e85cc67cbcb",
+    "name": "Edge",
+    "brand": "Motorola",
+    "state": "INACTIVE",
+    "creationTime": "2025-03-15T21:51:34.789Z",
+    "_class": "br.com.device.model.Device"
+  },
+  {
+    "id": "0fa8debc-bd30-4bc1-8737-f8eb42ca88a8",
+    "name": "Redmi",
+    "brand": "Xiaomi",
+    "state": "AVAILABLE",
+    "creationTime": "2025-03-15T21:52:06.527Z",
+    "_class": "br.com.device.model.Device"
+  }
+]

@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: 'device-service'
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
+  data:
+    mongodb:
+      uuid-representation: standard
+
+
+de.flapdoodle.mongodb.embedded.version: '8.0.3'

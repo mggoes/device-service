@@ -12,9 +12,11 @@ val springCloudVersion = "2024.0.0"
 val lombokVersion = "1.18.36"
 val mapStructVersion = "1.6.3"
 val mockitoVersion = "5.16.0"
+val embeddedMongoVersion = "4.18.0"
 
 val jacocoExclusions = arrayOf(
     "br/com/device/DeviceServiceApplication*",
+    "br/com/device/mapper/DeviceDataMapper*",
     "br/com/device/dto/**",
     "br/com/device/model/**",
     "br/com/device/repository/**"
@@ -51,6 +53,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring3x:$embeddedMongoVersion")
 
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
 
