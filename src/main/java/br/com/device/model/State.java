@@ -1,5 +1,14 @@
 package br.com.device.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum State {
-    AVAILABLE, IN_USE, INACTIVE
+    AVAILABLE("available"),
+    IN_USE("in-use"),
+    INACTIVE("inactive");
+
+    private final String displayName;
 }

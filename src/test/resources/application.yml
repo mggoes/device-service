@@ -10,5 +10,4 @@ spring:
     mongodb:
       uuid-representation: standard
 
-
 de.flapdoodle.mongodb.embedded.version: '8.0.3'

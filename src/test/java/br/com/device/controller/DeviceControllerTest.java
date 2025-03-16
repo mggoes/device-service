@@ -287,7 +287,7 @@ class DeviceControllerTest {
         final var id = fromString("2db19102-8bbc-43b6-afd2-993263ae6d1e");
 
         // When
-        this.mockMvc.perform(delete("/devices/" + id))
+        this.mockMvc.perform(delete("/devices/{id}", id))
                 .andExpect(status().isNoContent());
 
         // Then
@@ -300,7 +300,7 @@ class DeviceControllerTest {
         final var id = fromString("a5225c14-29b4-4b42-bf5b-a09b257b57fb");
 
         // When
-        this.mockMvc.perform(delete("/devices/" + id))
+        this.mockMvc.perform(delete("/devices/{id}", id))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0]").value("In use device cannot be removed"));
 
