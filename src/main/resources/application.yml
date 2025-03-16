@@ -13,3 +13,10 @@ spring:
       username: 'device_service'
       password: 'device@app'
       uuid-representation: standard
+
+open-api:
+  title: "Device Service"
+  version: "1.0.0"
+  description: "Service responsible for managing device resources"
+  author: "mggoes"
+  email: "matheus.ggoes@outlook.com"
