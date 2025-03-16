@@ -6,9 +6,9 @@ import br.com.device.dto.DeviceData.StateInfo;
 import br.com.device.service.DeviceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,9 +33,9 @@ public class DeviceController {
     }
 
     @GetMapping
-    public Page<DeviceData> readAll(@PageableDefault final Pageable pageable, final DeviceData filter) {
+    public PagedModel<DeviceData> readAll(@PageableDefault final Pageable pageable, final DeviceData filter) {
         log.info("a=readAll, p={}, f={}", pageable, filter);
-        return this.service.readAll(pageable, filter);
+        return new PagedModel<>(this.service.readAll(pageable, filter));
     }
 
     @GetMapping("/{id}")

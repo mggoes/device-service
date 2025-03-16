@@ -9,8 +9,9 @@ group = "br.com.device"
 version = "1.0.0"
 
 val springCloudVersion = "2024.0.0"
-val lombokVersion = "1.18.36"
+val springDocOpenApiVersion = "2.8.5"
 val mapStructVersion = "1.6.3"
+val lombokVersion = "1.18.36"
 val mockitoVersion = "5.16.0"
 val embeddedMongoVersion = "4.18.0"
 
@@ -42,6 +43,7 @@ dependencies {
         exclude("org.springframework.boot", "spring-boot-starter-tomcat")
     }
     implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
     implementation("org.mapstruct:mapstruct:$mapStructVersion")
     implementation("io.micrometer:micrometer-tracing-bridge-brave")
     implementation("io.zipkin.reporter2:zipkin-reporter-brave")
@@ -77,7 +79,7 @@ tasks.withType<JacocoCoverageVerification> {
     violationRules {
         rule {
             limit {
-                minimum = BigDecimal(0.9)
+                minimum = BigDecimal(1)
             }
         }
     }
