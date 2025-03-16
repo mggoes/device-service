@@ -1,6 +1,7 @@
 package br.com.device.exception;
 
 import br.com.device.dto.ErrorData;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -16,8 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import static java.time.Instant.now;
 import static java.util.List.of;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.ResponseEntity.badRequest;
 
 @Slf4j
@@ -36,6 +36,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ErrorData handleDeviceNotFoundException(final DeviceNotFoundException exception) {
         log.error("a=handleDeviceNotFoundException, e=DeviceNotFoundException, m={}", exception.getMessage());
         return new ErrorData(now(), NOT_FOUND.value(), of(NOT_FOUND.getReasonPhrase()));
+    }
+
+    @ResponseStatus(SERVICE_UNAVAILABLE)
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ErrorData handleCallNotPermittedException(final CallNotPermittedException exception) {
+        log.error("a=handleCallNotPermittedException, e=CallNotPermittedException, m={}", exception.getMessage());
+        return new ErrorData(now(), SERVICE_UNAVAILABLE.value(), of(SERVICE_UNAVAILABLE.getReasonPhrase()));
     }
 
     @Override

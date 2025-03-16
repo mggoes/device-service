@@ -31,6 +31,36 @@ management:
     health:
       show-details: always
 
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+    instances:
+      save-device-cb: &default-cb-config
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        sliding-window-size: 2
+        minimum-number-of-calls: 2
+        slow-call-rate-threshold: 100
+        sliding-window-type: COUNT_BASED
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 3
+      read-all-devices-cb: *default-cb-config
+      read-one-device-cb: *default-cb-config
+      update-device-cb: *default-cb-config
+      delete-device-cb: *default-cb-config
+  retry:
+    instances:
+      read-all-devices-retry: &default-retry-config
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        ignore-exceptions:
+          - io.github.resilience4j.circuitbreaker.CallNotPermittedException
+      read-one-device-retry: *default-retry-config
+
 open-api:
   title: "Device Service"
   version: "1.0.0"

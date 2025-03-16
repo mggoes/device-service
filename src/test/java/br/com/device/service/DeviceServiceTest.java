@@ -7,6 +7,7 @@ import br.com.device.mapper.DeviceDataMapper;
 import br.com.device.mapper.StateMapper;
 import br.com.device.model.Device;
 import br.com.device.repository.DeviceRepository;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
@@ -29,8 +31,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.PageRequest.of;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @SpringBootTest
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 class DeviceServiceTest {
 
     @MockitoSpyBean
@@ -66,6 +70,27 @@ class DeviceServiceTest {
         verify(this.mapper).toEntity(any(DeviceData.class));
         verify(this.mapper).toDTO(any(Device.class));
         verify(this.repository).save(any());
+    }
+
+    @Test
+    void shouldNotSaveWhenCircuitIsOpen() {
+        // Given
+        final DeviceData device = DeviceData.builder()
+                .name("iPhone")
+                .brand("Apple")
+                .state("available")
+                .build();
+
+        when(this.repository.save(any())).thenThrow(IllegalStateException.class);
+
+        // When
+        assertThrows(CallNotPermittedException.class, () -> this.service.save(device));
+
+        // Then
+        verify(this.stateMapper, times(2)).fromString(anyString());
+        verify(this.mapper, times(2)).toEntity(any(DeviceData.class));
+        verify(this.mapper, never()).toDTO(any(Device.class));
+        verify(this.repository, times(2)).save(any());
     }
 
     @Test
@@ -140,6 +165,23 @@ class DeviceServiceTest {
     }
 
     @Test
+    void shouldRetryReadAllWhenThereIsAnError() {
+        // Given
+        final var pageable = of(0, 10);
+        final var filter = DeviceData.builder().build();
+
+        when(this.repository.findAll(any(), any(Pageable.class))).thenThrow(IllegalStateException.class);
+
+        // When
+        assertThrows(IllegalStateException.class, () -> this.service.readAll(pageable, filter));
+
+        // Then
+        verify(this.mapper, times(3)).toEntity(any(DeviceData.class));
+        verify(this.mapper, never()).toDTO(any(Device.class));
+        verify(this.repository, times(3)).findAll(any(), any(Pageable.class));
+    }
+
+    @Test
     void shouldReadOne() {
         // Given
         final var id = randomUUID();
@@ -154,8 +196,21 @@ class DeviceServiceTest {
         assertNotNull(result);
         assertEquals(id, result.id());
 
-        verify(this.repository).findById(eq(id));
         verify(this.mapper).toDTO(any(Device.class));
+        verify(this.repository).findById(eq(id));
+    }
+
+    @Test
+    void shouldRetryReadOneWhenThereIsAnError() {
+        // Given
+        when(this.repository.findById(any())).thenThrow(IllegalStateException.class);
+
+        // When
+        assertThrows(IllegalStateException.class, () -> this.service.readOne(randomUUID()));
+
+        // Then
+        verify(this.mapper, never()).toDTO(any(Device.class));
+        verify(this.repository, times(3)).findById(any());
     }
 
     @Test
@@ -169,8 +224,8 @@ class DeviceServiceTest {
         assertThrows(DeviceNotFoundException.class, () -> this.service.readOne(id));
 
         // Then
-        verify(this.repository).findById(eq(id));
         verify(this.mapper, never()).toDTO(any(Device.class));
+        verify(this.repository, times(3)).findById(eq(id));
     }
 
     @Test

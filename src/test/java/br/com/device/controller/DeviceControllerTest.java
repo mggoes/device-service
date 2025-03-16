@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static java.time.Instant.now;
@@ -20,6 +21,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -40,7 +43,7 @@ class DeviceControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
-    @Autowired
+    @MockitoSpyBean
     private DeviceRepository repository;
 
     @Test
@@ -63,6 +66,26 @@ class DeviceControllerTest {
                 .andExpect(jsonPath("$.brand").value("Asus"))
                 .andExpect(jsonPath("$.state").value("available"))
                 .andExpect(jsonPath("$.creationTime").isNotEmpty());
+    }
+
+    @Test
+    void shouldReturnErrorDuringCreationWhenCircuitIsOpen() throws Exception {
+        // Given
+        final var device = DeviceData.builder()
+                .name("Zenfone")
+                .brand("Asus")
+                .state("available")
+                .build();
+
+        doThrow(IllegalStateException.class).when(this.repository).save(any());
+
+        // When and then
+        this.mockMvc.perform(post("/devices")
+                        .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                        .header(ACCEPT, APPLICATION_JSON_VALUE)
+                        .content(this.mapper.writeValueAsString(device)))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.errors[*]").value(containsInAnyOrder("Service Unavailable")));
     }
 
     @Test
@@ -158,7 +181,7 @@ class DeviceControllerTest {
     }
 
     @Test
-    void shouldReturnErrorWhenDeviceNotFound() throws Exception {
+    void shouldReturnErrorDuringReadOneWhenDeviceNotFound() throws Exception {
         // When and then
         this.mockMvc.perform(get("/devices/28c0cf3c-c0c3-465e-9e65-8a24a06b4cab")
                         .header(ACCEPT, APPLICATION_JSON_VALUE))

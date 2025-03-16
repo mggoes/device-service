@@ -6,6 +6,8 @@ import br.com.device.exception.DeviceNotFoundException;
 import br.com.device.mapper.DeviceDataMapper;
 import br.com.device.mapper.StateMapper;
 import br.com.device.repository.DeviceRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,8 @@ public class DeviceService {
     private final DeviceDataMapper mapper;
     private final DeviceRepository repository;
 
+    @Retry(name = "save-device-retry")
+    @CircuitBreaker(name = "save-device-cb")
     public DeviceData save(final DeviceData device) {
         final var entity = this.mapper.toEntity(device);
         log.info("a=save, e={}", entity);
@@ -34,6 +38,8 @@ public class DeviceService {
         return this.mapper.toDTO(entity);
     }
 
+    @Retry(name = "read-all-devices-retry")
+    @CircuitBreaker(name = "read-all-devices-cb")
     public Page<DeviceData> readAll(final Pageable pageable, final DeviceData filter) {
         final var entityFilter = this.mapper.toEntity(filter);
         log.info("a=readAll, f={}", entityFilter);
@@ -48,6 +54,8 @@ public class DeviceService {
      * @return device data.
      * @throws DeviceNotFoundException if device does not exist.
      */
+    @Retry(name = "read-one-device-retry")
+    @CircuitBreaker(name = "read-one-device-cb")
     public DeviceData readOne(final UUID id) {
         return this.repository.findById(id)
                 .map(this.mapper::toDTO)
@@ -63,6 +71,7 @@ public class DeviceService {
      * @throws DeviceNotFoundException if device does not exist.
      * @throws DeviceInUseException    if there is an attempt to update the name or brand and device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
      */
+    @CircuitBreaker(name = "update-device-cb")
     public DeviceData update(final UUID id, final DeviceData device) {
         final var foundDevice = this.readOne(id);
         if (this.isInUse(foundDevice) && (device.name() != null || device.brand() != null)) {
@@ -80,6 +89,7 @@ public class DeviceService {
      * @throws DeviceNotFoundException if device does not exist.
      * @throws DeviceInUseException    if device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
      */
+    @CircuitBreaker(name = "delete-device-cb")
     public void delete(final UUID id) {
         final var device = this.readOne(id);
         if (this.isInUse(device)) throw new DeviceInUseException("In use device cannot be removed");
