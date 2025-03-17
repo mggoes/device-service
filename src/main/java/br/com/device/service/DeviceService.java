@@ -56,7 +56,7 @@ public class DeviceService {
      */
     @Retry(name = "read-one-device-retry")
     @CircuitBreaker(name = "read-one-device-cb")
-    public DeviceData readOne(final UUID id) {
+    public DeviceData readOne(final UUID id) throws DeviceNotFoundException{
         return this.repository.findById(id)
                 .map(this.mapper::toDTO)
                 .orElseThrow(DeviceNotFoundException::new);
@@ -72,7 +72,7 @@ public class DeviceService {
      * @throws DeviceInUseException    if there is an attempt to update the name or brand and device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
      */
     @CircuitBreaker(name = "update-device-cb")
-    public DeviceData update(final UUID id, final DeviceData device) {
+    public DeviceData update(final UUID id, final DeviceData device) throws DeviceNotFoundException, DeviceInUseException {
         final var foundDevice = this.readOne(id);
         if (this.isInUse(foundDevice) && (device.name() != null || device.brand() != null)) {
             throw new DeviceInUseException("Name or brand cannot be changed while device is in use");
@@ -90,7 +90,7 @@ public class DeviceService {
      * @throws DeviceInUseException    if device is in the {@link br.com.device.model.State#IN_USE IN_USE} state.
      */
     @CircuitBreaker(name = "delete-device-cb")
-    public void delete(final UUID id) {
+    public void delete(final UUID id) throws DeviceNotFoundException, DeviceInUseException {
         final var device = this.readOne(id);
         if (this.isInUse(device)) throw new DeviceInUseException("In use device cannot be removed");
         this.repository.deleteById(id);
