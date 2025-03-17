@@ -32,6 +32,8 @@ docker compose up
 
 Now you can access the [API documentation](http://localhost:8080/swagger-ui/index.html).
 
+**Note: Keycloak service takes a while to start.**
+
 ---
 
 ### Running Unit Tests
