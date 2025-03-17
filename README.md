@@ -2,12 +2,15 @@ Device Service
 ---
 
 This is a simple service designed to manage device resources. It is built on the `Spring Boot` framework and employs
-`MongoDB` for data persistence. The following frameworks were utilized in the construction of this application:
+`MongoDB` for data persistence. The following frameworks and tools were utilized in the construction of this
+application:
 
 - [Spring Boot](https://docs.spring.io/spring-boot/index.html)
 - [MongoDB](https://www.mongodb.com/docs/)
 - [Embedded MongoDB](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring/tree/spring-3.x.x)
 - [Spring Data MongoDB](https://docs.spring.io/spring-data/mongodb/reference/)
+- [Spring Security](https://docs.spring.io/spring-security/reference/index.html)
+- [Keycloak](https://www.keycloak.org/documentation)
 - [Resilience4J](https://github.com/resilience4j/resilience4j)
 - [Micrometer](https://docs.micrometer.io/tracing/reference/)
 - [Lombok](https://projectlombok.org/)
@@ -45,12 +48,31 @@ Now you can access the [JaCoCo Report](build/reports/jacoco/test/html/index.html
 
 ---
 
-### Observability
+### Authorization
 
-| Feature           | Tool                                                      |
-|-------------------|-----------------------------------------------------------|
-| API Documentation | [Swagger UI](http://localhost:8080/swagger-ui/index.html) |
-| Tracing           | TODO                                                      |
+This service is also a resource server and its endpoints are protected by `Spring Security`. To access them, we need to
+pass a `JWT Bearer Token`. We can issue an access token through `Keycloak`, which acts as an authorization server:
+
+```shell
+curl --location 'http://localhost:8083/realms/master/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=client_credentials' \
+--data-urlencode 'client_id=device-service' \
+--data-urlencode 'client_secret=ymWPrMbHMGvgJHLBR3gYYxAYkOSUdUHd'
+```
+
+Now we can call the service using the access token in the `Authorization` header:
+
+```shell
+curl --location 'http://localhost:8080/devices' \
+--header 'Authorization: Bearer <ACCESS_TOKEN>'
+```
+
+To make requests in the `Swagger UI`, we can authenticate into [Keycloak](http://localhost:8083) using the following
+credentials:
+
+- Username: `admin`
+- Password: `admin`
 
 ---
 
