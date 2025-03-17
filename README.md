@@ -78,6 +78,15 @@ credentials:
 
 ---
 
+### Resilience
+
+This service uses `Resilience4J` to improve resilience. All device resource endpoints are protected by
+a [circuit breaker](https://github.com/mggoes/device-service/blob/main/src/main/resources/application.yml#L50), and
+retrieval endpoints have
+a [retry policy](https://github.com/mggoes/device-service/blob/main/src/main/resources/application.yml#L71).
+
+---
+
 ### Database
 
 This service uses `MongoDB` for data persistence. You can view databases and collections
