@@ -26,6 +26,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -57,6 +58,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(post("/devices")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -69,26 +71,6 @@ class DeviceControllerTest {
     }
 
     @Test
-    void shouldReturnErrorDuringCreationWhenCircuitIsOpen() throws Exception {
-        // Given
-        final var device = DeviceData.builder()
-                .name("Zenfone")
-                .brand("Asus")
-                .state("available")
-                .build();
-
-        doThrow(IllegalStateException.class).when(this.repository).save(any());
-
-        // When and then
-        this.mockMvc.perform(post("/devices")
-                        .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .header(ACCEPT, APPLICATION_JSON_VALUE)
-                        .content(this.mapper.writeValueAsString(device)))
-                .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.errors[*]").value(containsInAnyOrder("Service Unavailable")));
-    }
-
-    @Test
     void shouldNotCreateWhenRequiredFieldsAreMissing() throws Exception {
         // Given
         final var device = DeviceData.builder()
@@ -97,6 +79,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(post("/devices")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -108,6 +91,7 @@ class DeviceControllerTest {
     void shouldReadAll() throws Exception {
         // When and then
         this.mockMvc.perform(get("/devices")
+                        .with(jwt())
                         .header(ACCEPT, APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(4)))
@@ -123,6 +107,7 @@ class DeviceControllerTest {
     void shouldReadAllPaginated() throws Exception {
         // When and then
         this.mockMvc.perform(get("/devices")
+                        .with(jwt())
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .queryParam("size", "2"))
                 .andExpect(status().isOk())
@@ -139,6 +124,7 @@ class DeviceControllerTest {
     void shouldReadAllByBrand() throws Exception {
         // When and then
         this.mockMvc.perform(get("/devices")
+                        .with(jwt())
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .queryParam("brand", "Apple"))
                 .andExpect(status().isOk())
@@ -155,6 +141,7 @@ class DeviceControllerTest {
     void shouldReadAllByState() throws Exception {
         // When and then
         this.mockMvc.perform(get("/devices")
+                        .with(jwt())
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .queryParam("state", "available"))
                 .andExpect(status().isOk())
@@ -171,6 +158,7 @@ class DeviceControllerTest {
     void shouldReadOne() throws Exception {
         // When and then
         this.mockMvc.perform(get("/devices/8a37328e-8569-4810-af11-2e85cc67cbcb")
+                        .with(jwt())
                         .header(ACCEPT, APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("8a37328e-8569-4810-af11-2e85cc67cbcb"))
@@ -181,9 +169,10 @@ class DeviceControllerTest {
     }
 
     @Test
-    void shouldReturnErrorDuringReadOneWhenDeviceNotFound() throws Exception {
+    void shouldReturnNotFoundWhenDeviceDoesNotExist() throws Exception {
         // When and then
         this.mockMvc.perform(get("/devices/28c0cf3c-c0c3-465e-9e65-8a24a06b4cab")
+                        .with(jwt())
                         .header(ACCEPT, APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errors[0]").value("Not Found"));
@@ -201,6 +190,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(put("/devices/2db19102-8bbc-43b6-afd2-993263ae6d1e")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -222,6 +212,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(put("/devices/2db19102-8bbc-43b6-afd2-993263ae6d1e")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -239,6 +230,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(patch("/devices/2db19102-8bbc-43b6-afd2-993263ae6d1e")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -259,6 +251,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(patch("/devices/2db19102-8bbc-43b6-afd2-993263ae6d1e")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -275,6 +268,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(patch("/devices/2db19102-8bbc-43b6-afd2-993263ae6d1e")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -297,6 +291,7 @@ class DeviceControllerTest {
 
         // When and then
         this.mockMvc.perform(patch("/devices/a5225c14-29b4-4b42-bf5b-a09b257b57fb")
+                        .with(jwt())
                         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                         .header(ACCEPT, APPLICATION_JSON_VALUE)
                         .content(this.mapper.writeValueAsString(device)))
@@ -310,7 +305,7 @@ class DeviceControllerTest {
         final var id = fromString("2db19102-8bbc-43b6-afd2-993263ae6d1e");
 
         // When
-        this.mockMvc.perform(delete("/devices/{id}", id))
+        this.mockMvc.perform(delete("/devices/{id}", id).with(jwt()))
                 .andExpect(status().isNoContent());
 
         // Then
@@ -323,11 +318,51 @@ class DeviceControllerTest {
         final var id = fromString("a5225c14-29b4-4b42-bf5b-a09b257b57fb");
 
         // When
-        this.mockMvc.perform(delete("/devices/{id}", id))
+        this.mockMvc.perform(delete("/devices/{id}", id).with(jwt()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0]").value("In use device cannot be removed"));
 
         // Then
         assertTrue(this.repository.existsById(id));
+    }
+
+    @Test
+    void shouldReturnServiceUnavailableWhenCircuitIsOpen() throws Exception {
+        // Given
+        final var device = DeviceData.builder()
+                .name("Zenfone")
+                .brand("Asus")
+                .state("available")
+                .build();
+
+        doThrow(IllegalStateException.class).when(this.repository).save(any());
+
+        // When and then
+        this.mockMvc.perform(post("/devices")
+                        .with(jwt())
+                        .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                        .header(ACCEPT, APPLICATION_JSON_VALUE)
+                        .content(this.mapper.writeValueAsString(device)))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.errors[*]").value(containsInAnyOrder("Service Unavailable")));
+    }
+
+    @Test
+    void shouldReturnUnauthorizedWhenAuthorizationIsNotPresent() throws Exception {
+        // Given
+        final var device = DeviceData.builder()
+                .name("Zenfone")
+                .brand("Asus")
+                .state("available")
+                .build();
+
+        doThrow(IllegalStateException.class).when(this.repository).save(any());
+
+        // When and then
+        this.mockMvc.perform(post("/devices")
+                        .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                        .header(ACCEPT, APPLICATION_JSON_VALUE)
+                        .content(this.mapper.writeValueAsString(device)))
+                .andExpect(status().isUnauthorized());
     }
 }

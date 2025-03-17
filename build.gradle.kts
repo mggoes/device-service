@@ -39,7 +39,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-aop")
-//    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude("org.springframework.boot", "spring-boot-starter-tomcat")
     }
@@ -55,6 +56,7 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapStructVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring3x:$embeddedMongoVersion")
 

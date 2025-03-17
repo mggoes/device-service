@@ -9,6 +9,11 @@ spring:
   data:
     mongodb:
       uuid-representation: standard
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: 'test'
 
 resilience4j:
   circuitbreaker:

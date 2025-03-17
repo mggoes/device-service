@@ -13,6 +13,21 @@ spring:
       username: 'device_service'
       password: 'device@app'
       uuid-representation: standard
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            authorization-grant-type: 'client_credentials'
+            client-id: 'device-service'
+            client-secret: 'ymWPrMbHMGvgJHLBR3gYYxAYkOSUdUHd'
+        provider:
+          keycloak:
+            token-uri: 'http://localhost:8083/realms/master/protocol/openid-connect/token'
+            authorization-uri: 'http://localhost:8083/realms/master/protocol/openid-connect/auth'
+      resourceserver:
+        jwt:
+          issuer-uri: 'http://localhost:8083/realms/master'
 
 management:
   server:
@@ -24,7 +39,7 @@ management:
       enabled: true
   endpoints:
     web:
-      base-path: /
+      base-path: /actuator
       exposure:
         include: health,info,circuitbreakers,circuitbreakerevents,metrics
   endpoint:
