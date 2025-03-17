@@ -25,6 +25,9 @@ resilience4j:
         sliding-window-type: COUNT_BASED
         wait-duration-in-open-state: 10s
         permitted-number-of-calls-in-half-open-state: 3
+        ignore-exceptions:
+          - br.com.device.exception.DeviceInUseException
+          - br.com.device.exception.DeviceNotFoundException
       read-all-devices-cb: &default-cb-config
         failure-rate-threshold: 50
         slow-call-duration-threshold: 2s
@@ -34,6 +37,9 @@ resilience4j:
         sliding-window-type: COUNT_BASED
         wait-duration-in-open-state: 2s
         permitted-number-of-calls-in-half-open-state: 3
+        ignore-exceptions:
+          - br.com.device.exception.DeviceInUseException
+          - br.com.device.exception.DeviceNotFoundException
       read-one-device-cb: *default-cb-config
       update-device-cb: *default-cb-config
       delete-device-cb: *default-cb-config
@@ -45,6 +51,8 @@ resilience4j:
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2
         ignore-exceptions:
+          - br.com.device.exception.DeviceInUseException
+          - br.com.device.exception.DeviceNotFoundException
           - io.github.resilience4j.circuitbreaker.CallNotPermittedException
       read-all-devices-retry: *default-retry-config
       read-one-device-retry: *default-retry-config

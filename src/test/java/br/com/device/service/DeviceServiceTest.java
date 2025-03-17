@@ -225,7 +225,7 @@ class DeviceServiceTest {
 
         // Then
         verify(this.mapper, never()).toDTO(any(Device.class));
-        verify(this.repository, times(3)).findById(eq(id));
+        verify(this.repository).findById(eq(id));
     }
 
     @Test
