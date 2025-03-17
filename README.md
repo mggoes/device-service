@@ -1,7 +1,7 @@
 Device Service
 ---
 
-This is a simple service designed to manage device resources. It is built on the `Spring Boot` framework and employs
+This is a simple service designed to manage device resources. It is built on top of `Spring Boot` framework and employs
 `MongoDB` for data persistence. The following frameworks and tools were utilized in the construction of this
 application:
 
@@ -13,6 +13,7 @@ application:
 - [Keycloak](https://www.keycloak.org/documentation)
 - [Resilience4J](https://github.com/resilience4j/resilience4j)
 - [Micrometer](https://docs.micrometer.io/tracing/reference/)
+- [Jaeger](https://www.jaegertracing.io/docs/2.4/)
 - [Lombok](https://projectlombok.org/)
 - [MapStruct](https://mapstruct.org/documentation/stable/reference/html/)
 - [JaCoCo](https://www.eclemma.org/jacoco/)
@@ -27,12 +28,12 @@ application:
 Run `docker compose` command to build and start the aplication:
 
 ```shell
-docker compose up
+docker compose --profile prod up
 ```
 
 Now you can access the [API documentation](http://localhost:8080/swagger-ui/index.html).
 
-**Note: Keycloak service takes a while to start.**
+**Note: Keycloak service takes a while to start, and it delays the service startup.**
 
 ---
 
@@ -81,9 +82,16 @@ credentials:
 ### Resilience
 
 This service uses `Resilience4J` to improve resilience. All device resource endpoints are protected by
-a [circuit breaker](https://github.com/mggoes/device-service/blob/main/src/main/resources/application.yml#L50), and
+a [circuit breaker](https://github.com/mggoes/device-service/blob/main/src/main/resources/application.yml#L56), and
 retrieval endpoints have
-a [retry policy](https://github.com/mggoes/device-service/blob/main/src/main/resources/application.yml#L71).
+a [retry policy](https://github.com/mggoes/device-service/blob/main/src/main/resources/application.yml#L77).
+
+---
+
+### Observability
+
+This service sends request traces using `OpenTelemetry` and `Micrometer`. You can view them
+at [Jaeger UI](http://localhost:16686).
 
 ---
 

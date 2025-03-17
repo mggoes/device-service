@@ -48,8 +48,8 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
     implementation("org.mapstruct:mapstruct:$mapStructVersion")
-    implementation("io.micrometer:micrometer-tracing-bridge-brave")
-    implementation("io.zipkin.reporter2:zipkin-reporter-brave")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
 
     compileOnly("org.projectlombok:lombok:$lombokVersion")
 

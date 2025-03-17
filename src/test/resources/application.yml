@@ -15,6 +15,11 @@ spring:
         jwt:
           issuer-uri: 'test'
 
+management:
+  otlp:
+    tracing:
+      endpoint: 'http://localhost:4317'
+
 resilience4j:
   circuitbreaker:
     configs:

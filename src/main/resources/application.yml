@@ -45,6 +45,12 @@ management:
   endpoint:
     health:
       show-details: always
+  tracing:
+    sampling:
+      probability: 1
+  otlp:
+    tracing:
+      endpoint: 'http://localhost:4317'
 
 resilience4j:
   circuitbreaker:
