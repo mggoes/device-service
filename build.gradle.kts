@@ -17,6 +17,7 @@ val embeddedMongoVersion = "4.18.0"
 
 val jacocoExclusions = arrayOf(
     "br/com/device/DeviceServiceApplication*",
+    "br/com/device/config/OpenApiConfig*",
     "br/com/device/mapper/DeviceDataMapper*",
     "br/com/device/dto/**",
     "br/com/device/model/**",

@@ -4,6 +4,7 @@ import br.com.device.dto.DeviceData;
 import br.com.device.dto.DeviceData.BasicInfo;
 import br.com.device.dto.DeviceData.StateInfo;
 import br.com.device.service.DeviceService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/devices")
+@SecurityRequirement(name = "oauth2")
 public class DeviceController {
 
     private final DeviceService service;

@@ -81,9 +81,17 @@ resilience4j:
           - io.github.resilience4j.circuitbreaker.CallNotPermittedException
       read-one-device-retry: *default-retry-config
 
-open-api:
-  title: "Device Service"
-  version: "1.0.0"
-  description: "Service responsible for managing device resources"
-  author: "mggoes"
-  email: "matheus.ggoes@outlook.com"
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: '${spring.security.oauth2.client.registration.keycloak.client-id}'
+      client-secret: '${spring.security.oauth2.client.registration.keycloak.client-secret}'
+  auth-flow:
+    token-url: '${spring.security.oauth2.client.provider.keycloak.token-uri}'
+    authorization-url: '${spring.security.oauth2.client.provider.keycloak.authorization-uri}'
+  basic:
+    title: "Device Service"
+    version: "1.0.0"
+    description: "Service responsible for managing device resources"
+    author: "mggoes"
+    email: "matheus.ggoes@outlook.com"
