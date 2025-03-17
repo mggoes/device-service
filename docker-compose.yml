@@ -1,7 +1,6 @@
 services:
-  mongodb:
+  mongo:
     image: mongo
-    container_name: mongodb
     restart: always
     ports:
       - "27017:27017"
@@ -10,30 +9,43 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: device_db
     volumes:
-      - mongodb-data:/data/db/
       - ./db/init.js:/docker-entrypoint-initdb.d/init-db.js
     networks:
       - net
 
   mongo-express:
     image: mongo-express
-    container_name: mongo-express
     restart: always
     depends_on:
-      mongodb:
+      mongo:
         condition: service_started
     ports:
-      - "8081:8081"
+      - "8082:8081"
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_SERVER: mongo
       ME_CONFIG_MONGODB_ADMINUSERNAME: admin
       ME_CONFIG_MONGODB_ADMINPASSWORD: admin
     networks:
       - net
 
-volumes:
-  mongodb-data:
-    driver: local
+  app:
+    build:
+      context: .
+    depends_on:
+      mongo:
+        condition: service_started
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: "prod"
+      JAVA_OPTS: >-
+        -XX:+UseG1GC
+        -XX:MaxRAMPercentage=90
+        -XX:MinRAMPercentage=70
+        -XX:InitialRAMPercentage=50
+    networks:
+      - net
 
 networks:
   net:

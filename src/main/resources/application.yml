@@ -16,7 +16,7 @@ spring:
 
 management:
   server:
-    port: 8083
+    port: 8081
   health:
     circuitbreakers:
       enabled: true
